@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minimal Fargate setup to run RAJA tutorial
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC ID to run Fargate service in"
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Subnet ID to use (must support public IPs)"
+
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: raja-cluster
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: raja-task
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: vscode-raja
+          Image: ghcr.io/llnl/raja-suite-tutorial/tutorial:latest
+          PortMappings:
+            - ContainerPort: 80
+          Command: [
+            "/opt/archives/openvscode-server-v1.69.1-linux-x64/bin/openvscode-server",
+            "--without-connection-token",
+            "--host", "0.0.0.0",
+            "--port", "80"
+          ]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/raja-task
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: ecs
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/raja-task
+      RetentionInDays: 7
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow port access
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: Cluster
+    Properties:
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref SubnetId
+          SecurityGroups:
+            - !Ref SecurityGroup
+      TaskDefinition: !Ref TaskDefinition
