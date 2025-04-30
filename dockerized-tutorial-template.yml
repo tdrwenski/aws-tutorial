@@ -1,5 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Minimal Fargate setup to run RAJA tutorial
+Description: Use fargate to run a dockerized tutorial
+
+Parameters:
+  TutorialImage:
+    Type: String
+    Description: Docker image with tutorial materials
+  TutorialName:
+    Type: String
+    Description: Name of the tutorial
+  TutorialPort:
+    Type: Number
+    Description: Port to expose in docker
 
 Resources:
   VPC:
@@ -10,7 +21,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: RajaVpc
+          Value: !Sub "${TutorialName}-Vpc"
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -30,7 +41,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
         - Key: Name
-          Value: RajaPublicSubnet
+          Value: !Sub "${TutorialName}-PublicSubnet"
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -54,7 +65,7 @@ Resources:
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: raja-cluster
+      ClusterName: !Sub "${TutorialName}-cluster"
 
   TaskExecutionRole:
     Type: AWS::IAM::Role
@@ -72,7 +83,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: raja-task
+      Family: !Sub "${TutorialName}-task"
       Cpu: '512'
       Memory: '1024'
       NetworkMode: awsvpc
@@ -80,27 +91,21 @@ Resources:
         - FARGATE
       ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
       ContainerDefinitions:
-        - Name: vscode-raja
-          Image: ghcr.io/llnl/raja-suite-tutorial/tutorial:latest
+        - Name: !Sub "${TutorialName}-container"
+          Image: !Ref TutorialImage
           PortMappings:
-            - ContainerPort: 80
-          Command: [
-            "/opt/archives/openvscode-server-v1.69.1-linux-x64/bin/openvscode-server",
-            "--without-connection-token",
-            "--host", "0.0.0.0",
-            "--port", "80"
-          ]
+            - ContainerPort: !Ref TutorialPort
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: /ecs/raja-task
+              awslogs-group: !Sub "/ecs/${TutorialName}-task"
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: ecs
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/raja-task
+      LogGroupName: !Sub "/ecs/${TutorialName}-task"
       RetentionInDays: 7
 
   SecurityGroup:
@@ -110,8 +115,8 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
+          FromPort: !Ref TutorialPort
+          ToPort: !Ref TutorialPort
           CidrIp: 0.0.0.0/0
 
   Service:
@@ -129,3 +134,34 @@ Resources:
           SecurityGroups:
             - !Ref SecurityGroup
       TaskDefinition: !Ref TaskDefinition
+
+Outputs:
+  ClusterName:
+    Description: ECS Cluster Name
+    Value: !Ref Cluster
+
+  ServiceName:
+    Description: ECS Service Name
+    Value: !Ref Service
+
+  TaskDefinitionArn:
+    Description: Task Definition ARN
+    Value: !Ref TaskDefinition
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref SecurityGroup
+
+  GetContainerIPCommand:
+    Description: Commands to get the container's public IP
+    Value: !Sub |
+      # First, get the task ID:
+      TASK_ARN=$(aws ecs list-tasks --cluster ${Cluster} --query 'taskArns[0]' --output text)
+
+      # Then, get the network interface ID:
+      ENI_ID=$(aws ecs describe-tasks --cluster ${Cluster} --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+
+      # Finally, get the public IP:
+      PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+
+      echo "Tutorial at $PUBLIC_IP:${TutorialPort}"
