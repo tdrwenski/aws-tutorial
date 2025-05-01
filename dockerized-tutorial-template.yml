@@ -158,11 +158,35 @@ Outputs:
     Description: Commands to get the container's public IP
     Value: !Sub |
 
-      TASK_ARN=$(aws ecs list-tasks --cluster ${Cluster} --query 'taskArns[0]' --output text)
-      ENI_ID=$(aws ecs describe-tasks --cluster ${Cluster} --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
-      PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
-      PORT=${TutorialPort}
-      echo "$PUBLIC_IP:$PORT"
+  GetContainerIPCommand:
+    Description: Print task-id and public IP for all running tasks
+    Value: !Sub |
+      echo "task-id,public-ip"
+
+      aws ecs list-tasks \
+        --cluster ${Cluster} \
+        --desired-status RUNNING \
+        --query 'taskArns[]' \
+        --output text | tr '\t' '\n' | while read TASK; do
+
+        TASK_ID=$(aws ecs list-tags-for-resource \
+          --resource-arn "$TASK" \
+          --query 'tags[?key==`task-id`].value' \
+          --output text)
+
+        ENI_ID=$(aws ecs describe-tasks \
+          --cluster ${Cluster} \
+          --tasks "$TASK" \
+          --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+          --output text)
+
+        PUBLIC_IP=$(aws ec2 describe-network-interfaces \
+          --network-interface-ids "$ENI_ID" \
+          --query 'NetworkInterfaces[0].Association.PublicIp' \
+          --output text)
+
+        echo "$TASK_ID,$PUBLIC_IP"
+      done
 
   CleanupCommand:
     Description: Stop all manually launched tutorial tasks

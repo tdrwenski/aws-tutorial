@@ -30,10 +30,13 @@ eval "$(aws cloudformation describe-stacks \
 
 # get tutorial IP addresses
 ``` bash
-./list-tasks-ips.sh raja-tutorial
+eval "$(aws cloudformation describe-stacks \
+  --stack-name raja-tutorial \
+  --query "Stacks[0].Outputs[?OutputKey=='GetContainerIPCommand'].OutputValue" \
+  --output text)"
 ```
 
-# delete manually launched tasks
+# delete all manually launched tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
