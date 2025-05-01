@@ -1,3 +1,7 @@
+# Notes
+- You must have your AWS credentials configured in ~/.aws/credentials
+- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-1`.
+
 # create stack
 ``` bash
 aws cloudformation create-stack \
@@ -26,6 +30,16 @@ eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
   --query 'Stacks[0].Outputs[?OutputKey==`RunTaskCommandTemplate`].OutputValue' \
   --output text)"
+```
+
+# start <n> tasks
+``` bash
+eval "$(aws cloudformation describe-stacks \
+  --stack-name raja-tutorial \
+  --query "Stacks[0].Outputs[?OutputKey=='LaunchMultipleTasksCommand'].OutputValue" \
+  --output text)"
+
+launch_tasks 3
 ```
 
 # get tutorial IP addresses

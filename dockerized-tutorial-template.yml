@@ -154,6 +154,31 @@ Outputs:
         --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
         --tags key=task-id,value=$TASK_ID
 
+  LaunchMultipleTasksCommand:
+    Description: Bash function to launch N tutorial tasks manually
+    Value: !Sub |
+      launch_tasks() {
+        local N=$1
+        if [ -z "$N" ]; then
+          echo "Usage: launch_tasks <number-of-tasks>"
+          return 1
+        fi
+
+        for ((i = 1; i <= N; i++)); do
+          TASK_ID=$(printf "task-%03d" $i)
+          echo "Launching $TASK_ID..."
+
+          aws ecs run-task \
+            --cluster ${Cluster} \
+            --launch-type FARGATE \
+            --task-definition ${TaskDefinition} \
+            --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
+            --tags key=task-id,value=$TASK_ID
+        done
+      }
+
+      echo "Run 'launch_tasks N' to launch N tasks."
+
   GetContainerIPCommand:
     Description: Commands to get the container's public IP
     Value: !Sub |
