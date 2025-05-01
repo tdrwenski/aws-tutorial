@@ -119,30 +119,10 @@ Resources:
           ToPort: !Ref TutorialPort
           CidrIp: 0.0.0.0/0
 
-  Service:
-    Type: AWS::ECS::Service
-    DependsOn: Cluster
-    Properties:
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 1
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          Subnets:
-            - !Ref PublicSubnet
-          SecurityGroups:
-            - !Ref SecurityGroup
-      TaskDefinition: !Ref TaskDefinition
-
 Outputs:
   ClusterName:
     Description: ECS Cluster Name
     Value: !Ref Cluster
-
-  ServiceName:
-    Description: ECS Service Name
-    Value: !Ref Service
 
   TaskDefinitionArn:
     Description: Task Definition ARN
