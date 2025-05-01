@@ -1,4 +1,3 @@
-
 # create stack
 ``` bash
 aws cloudformation create-stack \
@@ -21,12 +20,25 @@ aws cloudformation update-stack \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-# get tutorial location
+# start task (container)
 ``` bash
-aws cloudformation describe-stacks \
+eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
-  --query 'Stacks[0].Outputs[?OutputKey==`GetContainerIPCommand`].OutputValue' \
-  --output text
+  --query 'Stacks[0].Outputs[?OutputKey==`RunTaskCommandTemplate`].OutputValue' \
+  --output text)"
+```
+
+# get tutorial IP addresses
+``` bash
+./list-tasks-ips.sh raja-tutorial
+```
+
+# delete manually launched tasks
+``` bash
+eval "$(aws cloudformation describe-stacks \
+  --stack-name raja-tutorial \
+  --query 'Stacks[0].Outputs[?OutputKey==`CleanupCommand`].OutputValue' \
+  --output text)"
 ```
 
 # delete stack

@@ -132,16 +132,41 @@ Outputs:
     Description: Security Group ID
     Value: !Ref SecurityGroup
 
+  PublicSubnetId:
+    Description: Public Subnet ID
+    Value: !Ref PublicSubnet
+
+  RunTaskCommandTemplate:
+    Description: Template for launching a tutorial task
+    Value: !Sub |
+
+      COUNT=$(aws ecs list-tasks \
+        --cluster ${Cluster} \
+        --desired-status RUNNING \
+        --query 'taskArns' \
+        --output text | wc -w)
+      TASK_ID=$(printf "task-%03d" $((COUNT + 1)))
+
+      aws ecs run-task \
+        --cluster ${Cluster} \
+        --launch-type FARGATE \
+        --task-definition ${TaskDefinition} \
+        --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
+        --tags key=task-id,value=$TASK_ID
+
   GetContainerIPCommand:
     Description: Commands to get the container's public IP
     Value: !Sub |
-      # First, get the task ID:
+
       TASK_ARN=$(aws ecs list-tasks --cluster ${Cluster} --query 'taskArns[0]' --output text)
-
-      # Then, get the network interface ID:
       ENI_ID=$(aws ecs describe-tasks --cluster ${Cluster} --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
-
-      # Finally, get the public IP:
       PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+      PORT=${TutorialPort}
+      echo "$PUBLIC_IP:$PORT"
 
-      echo "Tutorial at $PUBLIC_IP:${TutorialPort}"
+  CleanupCommand:
+    Description: Stop all manually launched tutorial tasks
+    Value: !Sub |
+
+      aws ecs list-tasks --cluster ${Cluster} --desired-status RUNNING --query 'taskArns[]' --output text | \
+      xargs -n 1 -I {} aws ecs stop-task --cluster ${Cluster} --task {}
