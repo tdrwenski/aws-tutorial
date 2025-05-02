@@ -2,7 +2,8 @@
 - You must have your AWS credentials configured in ~/.aws/credentials
 - This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-1`.
 
-# create stack
+# AWS CLI commands
+## create stack
 ``` bash
 aws cloudformation create-stack \
   --stack-name raja-tutorial \
@@ -13,7 +14,7 @@ aws cloudformation create-stack \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-# update stack
+## update stack
 ``` bash
 aws cloudformation update-stack \
   --stack-name raja-tutorial \
@@ -24,7 +25,7 @@ aws cloudformation update-stack \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-# start task (container)
+## start task (container)
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
@@ -32,7 +33,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-# start <n> tasks
+## start multiple tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
@@ -42,7 +43,7 @@ eval "$(aws cloudformation describe-stacks \
 launch_tasks 3
 ```
 
-# get tutorial IP addresses
+## get tutorial IP addresses
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
@@ -50,7 +51,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-# delete all manually launched tasks
+## delete all manually launched tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name raja-tutorial \
@@ -58,7 +59,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-# delete stack
+## delete stack
 ``` bash
 aws cloudformation delete-stack --stack-name raja-tutorial
 ```
