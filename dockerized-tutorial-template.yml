@@ -180,10 +180,6 @@ Outputs:
       echo "Run 'launch_tasks N' to launch N tasks."
 
   GetContainerIPCommand:
-    Description: Commands to get the container's public IP
-    Value: !Sub |
-
-  GetContainerIPCommand:
     Description: Print task-id and public IP for all running tasks
     Value: !Sub |
       echo "task-id,public-ip"
