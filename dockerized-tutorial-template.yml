@@ -123,22 +123,13 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: SlackBotLambda
-      Handler: index.lambda_handler
+      Handler: lambda_function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
       Timeout: 15
       Code:
-        ZipFile: |
-          import json
-          def lambda_handler(event, context):
-              return {
-                  'statusCode': 200,
-                  'headers': {"Content-Type": "application/json"},
-                  'body': json.dumps({
-                      "response_type": "in_channel",
-                      "text": "Hello from Slack bot Lambda!"
-                  })
-              }
+        S3Bucket: hpcic-tutorials
+        S3Key: slackbot/lambda_function.zip
       Environment:
         Variables:
           LOG_LEVEL: INFO
@@ -171,6 +162,7 @@ Resources:
                   - ecs:RunTask
                   - ecs:DescribeTasks
                   - ec2:DescribeNetworkInterfaces
+                  - ecs:TagResource
                 Resource: "*"
 
   SlackHttpApi:

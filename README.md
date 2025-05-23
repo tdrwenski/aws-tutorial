@@ -1,6 +1,6 @@
 # Notes
 - You must have your AWS credentials configured in ~/.aws/credentials
-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-1`.
+- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-2`.
 
 # AWS CLI commands
 ## create stack
@@ -26,6 +26,12 @@ aws cloudformation update-stack \
 ```
 
 ## Slackbot integration through lambda
+Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
+```
+zip lambda_function.zip lambda_function.py
+aws s3 cp lambda_function.zip s3://hpcic-tutorials/slackbot/lambda_function.zip
+```
+
 Get URL needed in slackbot slash command
 ```
 aws cloudformation describe-stacks \
