@@ -119,6 +119,96 @@ Resources:
           ToPort: !Ref TutorialPort
           CidrIp: 0.0.0.0/0
 
+  SlackBotLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: SlackBotLambda
+      Handler: index.lambda_handler
+      Runtime: python3.12
+      Role: !GetAtt SlackBotLambdaRole.Arn
+      Timeout: 15
+      Code:
+        ZipFile: |
+          import json
+          def lambda_handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'headers': {"Content-Type": "application/json"},
+                  'body': json.dumps({
+                      "response_type": "in_channel",
+                      "text": "Hello from Slack bot Lambda!"
+                  })
+              }
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
+
+  SlackBotLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SlackBotLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SlackBotPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                  - ecs:RunTask
+                  - ecs:DescribeTasks
+                  - ec2:DescribeNetworkInterfaces
+                Resource: "*"
+
+  SlackHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: SlackBotAPI
+      ProtocolType: HTTP
+
+  SlackHttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref SlackHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SlackBotLambda.Arn
+      PayloadFormatVersion: "2.0"
+
+  SlackHttpApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SlackHttpApi
+      RouteKey: "POST /slack/command"
+      Target: !Sub "integrations/${SlackHttpApiIntegration}"
+
+  SlackHttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref SlackHttpApi
+      StageName: $default
+      AutoDeploy: true
+
+  SlackBotLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SlackBotLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SlackHttpApi}/*/*"
+
 Outputs:
   ClusterName:
     Description: ECS Cluster Name
@@ -215,3 +305,7 @@ Outputs:
 
       aws ecs list-tasks --cluster ${Cluster} --desired-status RUNNING --query 'taskArns[]' --output text | \
       xargs -n 1 -I {} aws ecs stop-task --cluster ${Cluster} --task {}
+
+  SlackCommandUrl:
+    Description: Slack command endpoint URL
+    Value: !Sub "https://${SlackHttpApi}.execute-api.${AWS::Region}.amazonaws.com/slack/command"

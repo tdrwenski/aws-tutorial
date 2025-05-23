@@ -25,6 +25,15 @@ aws cloudformation update-stack \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
+## Slackbot integration through lambda
+Get URL needed in slackbot slash command
+```
+aws cloudformation describe-stacks \
+  --stack-name raja-tutorial \
+  --query "Stacks[0].Outputs[?OutputKey=='SlackCommandUrl'].OutputValue" \
+  --output text
+```
+
 ## start task (container)
 ``` bash
 eval "$(aws cloudformation describe-stacks \
