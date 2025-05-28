@@ -6,7 +6,7 @@ import time
 
 cf = boto3.client("cloudformation")
 ecs = boto3.client("ecs")
-ec2 = boto3.client("ec2")
+events = boto3.client("events")
 
 def get_cf_output(outputs, key):
     for output in outputs:
@@ -18,19 +18,19 @@ def lambda_handler(event, context):
     raw_body = event.get("body", "")
     if event.get("isBase64Encoded", False):
         raw_body = base64.b64decode(raw_body).decode("utf-8")
+
     print("RAW EVENT BODY:", raw_body)
     params = urllib.parse.parse_qs(raw_body)
-    print(f"params = {params}")
-    text_values = params.get("text", [])
-    text = text_values[0].strip() if text_values else ""
+    text = params.get("text", [""])[0].strip()
+    response_url = params.get("response_url", [""])[0]
+    user = params.get("user_name", ["unknown"])[0]
 
-    # Require a stack name
     if not text:
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
-                "response_type": "ephemeral",  # Only visible to the user
+                "response_type": "ephemeral",
                 "text": "You must specify a stack name.\nUsage: `/launch <stack-name>`"
             })
         }
@@ -38,15 +38,16 @@ def lambda_handler(event, context):
     stack_name = text
 
     try:
+        # Look up stack outputs
         stack = cf.describe_stacks(StackName=stack_name)["Stacks"][0]
         outputs = stack["Outputs"]
-
         cluster = get_cf_output(outputs, "ClusterName")
         task_def = get_cf_output(outputs, "TaskDefinitionArn")
         subnet_id = get_cf_output(outputs, "PublicSubnetId")
         sg_id = get_cf_output(outputs, "SecurityGroupId")
 
-        response = ecs.run_task(
+        # Launch ECS task
+        run_response = ecs.run_task(
             cluster=cluster,
             launchType="FARGATE",
             taskDefinition=task_def,
@@ -63,33 +64,37 @@ def lambda_handler(event, context):
             ]
         )
 
-        task_arn = response["tasks"][0]["taskArn"]
-        ecs.get_waiter("tasks_running").wait(cluster=cluster, tasks=[task_arn])
+        task_arn = run_response["tasks"][0]["taskArn"]
 
-        task_desc = ecs.describe_tasks(cluster=cluster, tasks=[task_arn])
-        eni_id = next(d["value"] for d in task_desc["tasks"][0]["attachments"][0]["details"]
-                      if d["name"] == "networkInterfaceId")
+        # Emit event for async follow-up
+        events.put_events(
+            Entries=[{
+                "Source": "custom.slackbot",
+                "DetailType": "TaskStarted",
+                "Detail": json.dumps({
+                    "task_arn": task_arn,
+                    "cluster": cluster,
+                    "response_url": response_url,
+                    "user": user
+                })
+            }]
+        )
 
-        eni = ec2.describe_network_interfaces(NetworkInterfaceIds=[eni_id])
-        public_ip = eni["NetworkInterfaces"][0]["Association"]["PublicIp"]
-
-        msg = f"Task launched in stack `{stack_name}`.\nPublic IP: `{public_ip}`"
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({
-                "response_type": "in_channel",
-                "text": msg
-            })
-        }
-
-    except Exception as e:
-        msg = f"Failed with {e}"
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "response_type": "ephemeral",
-                "text": msg
+                "text": f"Task is launching for `{stack_name}`.\nYou’ll get a message when it’s ready."
+            })
+        }
+
+    except Exception as e:
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({
+                "response_type": "ephemeral",
+                "text": f"Failed to launch task: {e}"
             })
         }
