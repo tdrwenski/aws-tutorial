@@ -129,7 +129,7 @@ Resources:
       Timeout: 15
       Code:
         S3Bucket: hpcic-tutorials
-        S3Key: slackbot/lambda-function.zip
+        S3Key: slackbot/launch-function.zip
       Environment:
         Variables:
           LOG_LEVEL: INFO
