@@ -1,6 +1,7 @@
 # Notes
 - You must have your AWS credentials configured in ~/.aws/credentials
 - This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-2`.
+- It is faster to pull a docker image from the ECR, especially for large images
 
 # AWS CLI commands
 ## create stack
@@ -8,7 +9,7 @@
 aws cloudformation create-stack \
   --stack-name raja-tutorial \
   --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=ghcr.io/llnl/raja-suite-tutorial/tutorial:latest \
+  --parameters ParameterKey=TutorialImage,ParameterValue=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest \
                ParameterKey=TutorialPort,ParameterValue=3000 \
                ParameterKey=TutorialName,ParameterValue=raja \
   --capabilities CAPABILITY_NAMED_IAM
@@ -19,7 +20,7 @@ aws cloudformation create-stack \
 aws cloudformation update-stack \
   --stack-name raja-tutorial \
   --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=ghcr.io/llnl/raja-suite-tutorial/tutorial:latest \
+  --parameters ParameterKey=TutorialImage,ParameterValue=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest \
                ParameterKey=TutorialPort,ParameterValue=3000 \
                ParameterKey=TutorialName,ParameterValue=raja \
   --capabilities CAPABILITY_NAMED_IAM
