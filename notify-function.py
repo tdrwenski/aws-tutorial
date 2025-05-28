@@ -1,8 +1,7 @@
 import boto3
 import time
 import json
-
-from botocore.vendored import requests
+import requests
 
 ecs = boto3.client("ecs")
 ec2 = boto3.client("ec2")
@@ -16,8 +15,7 @@ def lambda_handler(event, context):
     response_url = detail["response_url"]
 
     try:
-        # Poll until the task is running (max 60s)
-        for attempt in range(60):
+        for attempt in range(100):
             task = ecs.describe_tasks(cluster=cluster, tasks=[task_arn])["tasks"][0]
             last_status = task["lastStatus"]
             print(f"[Attempt {attempt}] Task status: {last_status}")
