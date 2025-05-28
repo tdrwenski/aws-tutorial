@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Use fargate to run a dockerized tutorial
+Description: Use Fargate and Lambdas to launch a dockerized tutorial
 
 Parameters:
   TutorialImage:
