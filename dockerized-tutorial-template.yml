@@ -134,6 +134,38 @@ Resources:
         Variables:
           LOG_LEVEL: INFO
 
+  SlackBotNotifyLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: SlackBotNotify
+      Handler: index.lambda_handler
+      Runtime: python3.12
+      Role: !GetAtt SlackBotLambdaRole.Arn
+      Timeout: 300
+      Code:
+        S3Bucket: hpcic-tutorials
+        S3Key: slackbot/notify-function.zip
+
+  SlackBotEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: SlackBotTaskReady
+      EventBusName: default
+      EventPattern:
+        source:
+          - "custom.slackbot"
+      Targets:
+        - Arn: !GetAtt SlackBotNotifyLambda.Arn
+          Id: SlackNotify
+
+  SlackBotNotifyPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SlackBotNotifyLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt SlackBotEventRule.Arn
+
   SlackBotLambdaRole:
     Type: AWS::IAM::Role
     Properties:

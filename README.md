@@ -30,6 +30,8 @@ Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
 ```
 zip lambda-function.zip lambda-function.py
 aws s3 cp lambda-function.zip s3://hpcic-tutorials/slackbot/lambda-function.zip
+zip notify-function.zip notify-function.py
+aws s3 cp notify-function.zip s3://hpcic-tutorials/slackbot/notify-function.zip
 ```
 
 Get URL needed in slackbot slash command
