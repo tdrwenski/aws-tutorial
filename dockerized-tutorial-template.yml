@@ -123,22 +123,19 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: SlackBotLambda
-      Handler: lambda_function.lambda_handler
+      Handler: launch-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
       Timeout: 15
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/launch-function.zip
-      Environment:
-        Variables:
-          LOG_LEVEL: INFO
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: SlackBotNotify
-      Handler: index.lambda_handler
+      Handler: notify-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
       Timeout: 300
