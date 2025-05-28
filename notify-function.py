@@ -33,9 +33,10 @@ def lambda_handler(event, context):
 
         eni_desc = ec2.describe_network_interfaces(NetworkInterfaceIds=[eni_id])
         public_ip = eni_desc["NetworkInterfaces"][0]["Association"]["PublicIp"]
+        port = detail.get("port", "80")
 
         # Send IP to Slack
-        send_response(response_url, f"Your container is ready at `http://{public_ip}`")
+        send_response(response_url, f"Your container is ready at `http://{public_ip}:{port}`")
 
     except Exception as e:
         print("Error:", e)

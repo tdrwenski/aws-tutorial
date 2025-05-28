@@ -269,6 +269,10 @@ Outputs:
     Description: Public Subnet ID
     Value: !Ref PublicSubnet
 
+  TutorialPort:
+    Description: Port exposed by the container
+    Value: !Ref TutorialPort
+
   RunTaskCommandTemplate:
     Description: Template for launching a tutorial task
     Value: !Sub |
