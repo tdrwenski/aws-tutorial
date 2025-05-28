@@ -28,8 +28,8 @@ aws cloudformation update-stack \
 ## Slackbot integration through lambda
 Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
 ```
-zip lambda_function.zip lambda_function.py
-aws s3 cp lambda_function.zip s3://hpcic-tutorials/slackbot/lambda_function.zip
+zip lambda-function.zip lambda-function.py
+aws s3 cp lambda-function.zip s3://hpcic-tutorials/slackbot/lambda-function.zip
 ```
 
 Get URL needed in slackbot slash command
