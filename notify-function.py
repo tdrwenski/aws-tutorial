@@ -1,7 +1,8 @@
 import boto3
 import time
 import json
-import requests
+
+from botocore.vendored import requests
 
 ecs = boto3.client("ecs")
 ec2 = boto3.client("ec2")
