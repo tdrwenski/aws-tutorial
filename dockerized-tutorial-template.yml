@@ -119,10 +119,10 @@ Resources:
           ToPort: !Ref TutorialPort
           CidrIp: 0.0.0.0/0
 
-  SlackBotLambda:
+  SlackBotLaunchLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: SlackBotLambda
+      FunctionName: SlackBotLaunchLambda
       Handler: launch-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
@@ -215,7 +215,7 @@ Resources:
     Properties:
       ApiId: !Ref SlackHttpApi
       IntegrationType: AWS_PROXY
-      IntegrationUri: !GetAtt SlackBotLambda.Arn
+      IntegrationUri: !GetAtt SlackBotLaunchLambda.Arn
       PayloadFormatVersion: "2.0"
 
   SlackHttpApiRoute:
@@ -235,7 +235,7 @@ Resources:
   SlackBotLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref SlackBotLambda
+      FunctionName: !Ref SlackBotLaunchLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SlackHttpApi}/*/*"
@@ -249,7 +249,7 @@ Resources:
   SlackBotLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${SlackBotLambda}"
+      LogGroupName: !Sub "/aws/lambda/${SlackBotLaunchLambda}"
       RetentionInDays: 7
 
 Outputs:
