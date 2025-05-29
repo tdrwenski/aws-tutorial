@@ -6,9 +6,12 @@ aws s3 cp launch-function.zip s3://hpcic-tutorials/slackbot/launch-function.zip
 rm launch-function.zip
 
 # notify function
-mkdir requests
-python3 -m pip install requests -t requests --no-cache-dir
-zip -r notify-function.zip notify-function.py requests*
+mkdir -p notify-package
+cd notify-package
+python3 -m pip install requests -t .
+cp ../notify-function.py .
+zip -r ../notify-function.zip *
+cd ..
 aws s3 cp notify-function.zip s3://hpcic-tutorials/slackbot/notify-function.zip
-rm -rf requests*
+rm -rf notify-package
 rm notify-function.zip
