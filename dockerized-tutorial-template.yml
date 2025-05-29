@@ -122,7 +122,7 @@ Resources:
   SlackBotLaunchLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: SlackBotLaunchLambda
+      FunctionName: SlackBotLaunch
       Handler: launch-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
