@@ -15,6 +15,8 @@ def lambda_handler(event, context):
     response_url = detail["response_url"]
 
     try:
+        start_time = time.time()
+
         for attempt in range(100):
             task = ecs.describe_tasks(cluster=cluster, tasks=[task_arn])["tasks"][0]
             last_status = task["lastStatus"]
@@ -26,6 +28,9 @@ def lambda_handler(event, context):
         else:
             send_response(response_url, "Task is taking too long to start. Try again in a minute.")
             return
+
+        elapsed = time.time() - start_time
+        print(f"Total wait time: {elapsed:.1f} seconds")
 
         # Get ENI and public IP
         eni_id = next(d["value"] for d in task["attachments"][0]["details"]
