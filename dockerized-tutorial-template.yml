@@ -126,7 +126,7 @@ Resources:
   SlackBotLaunchLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: SlackBotLaunch
+      FunctionName: !Sub "${AWS::StackName}-SlackBotLaunch"
       Handler: launch-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
@@ -139,7 +139,7 @@ Resources:
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: SlackBotNotify
+      FunctionName: !Sub "${AWS::StackName}-SlackBotNotify"
       Handler: notify-function.lambda_handler
       Runtime: python3.12
       Role: !GetAtt SlackBotLambdaRole.Arn
@@ -152,7 +152,7 @@ Resources:
   SlackBotEventRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: SlackBotTaskReady
+      Name: !Sub "${AWS::StackName}-SlackBotTaskReady"
       EventBusName: default
       EventPattern:
         source:
@@ -172,7 +172,7 @@ Resources:
   SlackBotLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: SlackBotLambdaExecutionRole
+      RoleName: !Sub "${AWS::StackName}-SlackBotLambdaExecutionRole"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
