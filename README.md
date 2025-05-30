@@ -13,6 +13,15 @@ TUTORIAL_NAME=raja
 TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
 ```
 
+Configure a second stack for test purposes with below cloud formation commands, for instance with:
+``` bash
+TUTORIAL_STACK_NAME=nginx-tutorial
+TUTORIAL_IMAGE=nginx:alpine
+TUTORIAL_PORT=80
+TUTORIAL_NAME=nginx
+TUTORIAL_QUERY_STRING=""
+```
+
 ## create stack
 ``` bash
 aws cloudformation create-stack \
