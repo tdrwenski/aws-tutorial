@@ -228,7 +228,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref SlackHttpApi
-      RouteKey: "POST /slack/command"
+      RouteKey: "POST /launch/{stack_name}"
       Target: !Sub "integrations/${SlackHttpApiIntegration}"
 
   SlackHttpApiStage:

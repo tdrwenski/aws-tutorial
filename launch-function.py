@@ -20,22 +20,11 @@ def lambda_handler(event, context):
         raw_body = base64.b64decode(raw_body).decode("utf-8")
 
     print("RAW EVENT BODY:", raw_body)
+
+    stack_name = event["pathParameters"]["stack_name"]
     params = urllib.parse.parse_qs(raw_body)
-    text = params.get("text", [""])[0].strip()
     response_url = params.get("response_url", [""])[0]
     user = params.get("user_name", ["unknown"])[0]
-
-    if not text:
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({
-                "response_type": "ephemeral",
-                "text": "You must specify a stack name.\nUsage: `/launch <stack-name>`"
-            })
-        }
-
-    stack_name = text
 
     try:
         # Look up stack outputs
