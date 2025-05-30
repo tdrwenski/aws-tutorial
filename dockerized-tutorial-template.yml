@@ -134,7 +134,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/launch-function.zip
-        S3ObjectVersion: "UdQsIGMbIoUeuWT0YkDtXmerkO2sn5nq"
+        S3ObjectVersion: "AZ3eK2dk8ZeSjB8Jjj4czSwm7jckZ9Ph"
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
@@ -147,7 +147,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/notify-function.zip
-        S3ObjectVersion: "AfKa4v5gVOP3FE6gG95Zj7QnIoIFisy1"
+        S3ObjectVersion: "lRUfoG36khNogMkK9akbqdPPF7rdTgHF"
 
   SlackBotEventRule:
     Type: AWS::Events::Rule
