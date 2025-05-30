@@ -4,25 +4,36 @@
 - It is faster to pull a docker image from the ECR, especially for large images
 
 # AWS CLI commands
+Set parameters for create and update commands, e.g. for Raja:
+``` bash
+TUTORIAL_STACK_NAME=raja-tutorial
+TUTORIAL_IMAGE=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest
+TUTORIAL_PORT=3000
+TUTORIAL_NAME=raja
+TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
+```
+
 ## create stack
 ``` bash
 aws cloudformation create-stack \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest \
-               ParameterKey=TutorialPort,ParameterValue=3000 \
-               ParameterKey=TutorialName,ParameterValue=raja \
+  --parameters ParameterKey=TutorialImage,ParameterValue=$TUTORIAL_IMAGE \
+               ParameterKey=TutorialPort,ParameterValue=$TUTORIAL_PORT \
+               ParameterKey=TutorialName,ParameterValue=$TUTORIAL_NAME \
+               ParameterKey=TutorialQueryString,ParameterValue=$TUTORIAL_QUERY_STRING \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
 ## update stack
 ``` bash
 aws cloudformation update-stack \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest \
-               ParameterKey=TutorialPort,ParameterValue=3000 \
-               ParameterKey=TutorialName,ParameterValue=raja \
+  --parameters ParameterKey=TutorialImage,ParameterValue=$TUTORIAL_IMAGE \
+               ParameterKey=TutorialPort,ParameterValue=$TUTORIAL_PORT \
+               ParameterKey=TutorialName,ParameterValue=$TUTORIAL_NAME \
+               ParameterKey=TutorialQueryString,ParameterValue=$TUTORIAL_QUERY_STRING \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
@@ -35,7 +46,7 @@ Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
 Get URL needed in slackbot slash command
 ```
 aws cloudformation describe-stacks \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --query "Stacks[0].Outputs[?OutputKey=='SlackCommandUrl'].OutputValue" \
   --output text
 ```
@@ -43,7 +54,7 @@ aws cloudformation describe-stacks \
 ## start task (container)
 ``` bash
 eval "$(aws cloudformation describe-stacks \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --query 'Stacks[0].Outputs[?OutputKey==`RunTaskCommandTemplate`].OutputValue' \
   --output text)"
 ```
@@ -51,7 +62,7 @@ eval "$(aws cloudformation describe-stacks \
 ## start multiple tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --query "Stacks[0].Outputs[?OutputKey=='LaunchMultipleTasksCommand'].OutputValue" \
   --output text)"
 
@@ -61,7 +72,7 @@ launch_tasks 3
 ## get tutorial IP addresses
 ``` bash
 eval "$(aws cloudformation describe-stacks \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --query "Stacks[0].Outputs[?OutputKey=='GetContainerIPCommand'].OutputValue" \
   --output text)"
 ```
@@ -69,12 +80,12 @@ eval "$(aws cloudformation describe-stacks \
 ## delete all manually launched tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
-  --stack-name raja-tutorial \
+  --stack-name $TUTORIAL_STACK_NAME \
   --query 'Stacks[0].Outputs[?OutputKey==`CleanupCommand`].OutputValue' \
   --output text)"
 ```
 
 ## delete stack
 ``` bash
-aws cloudformation delete-stack --stack-name raja-tutorial
+aws cloudformation delete-stack --stack-name $TUTORIAL_STACK_NAME
 ```
