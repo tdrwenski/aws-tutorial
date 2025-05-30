@@ -365,4 +365,4 @@ Outputs:
 
   SlackCommandUrl:
     Description: Slack command endpoint URL
-    Value: !Sub "https://${SlackHttpApi}.execute-api.${AWS::Region}.amazonaws.com/slack/command"
+    Value: !Sub "https://${SlackHttpApi}.execute-api.${AWS::Region}.amazonaws.com/launch/${AWS::StackName}"
