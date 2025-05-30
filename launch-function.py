@@ -22,6 +22,14 @@ def lambda_handler(event, context):
     print("RAW EVENT BODY:", raw_body)
 
     stack_name = event["pathParameters"]["stack_name"]
+    print(f"stack_name = {stack_name}")
+    if not stack_name:
+        return {
+            "statusCode": 400,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": "Stack name is required"})
+        }
+
     params = urllib.parse.parse_qs(raw_body)
     response_url = params.get("response_url", [""])[0]
     user = params.get("user_name", ["unknown"])[0]
@@ -65,6 +73,7 @@ def lambda_handler(event, context):
                 "Detail": json.dumps({
                     "task_arn": task_arn,
                     "cluster": cluster,
+                    "stack": stack_name,
                     "response_url": response_url,
                     "user": user,
                     "port": tutorial_port,

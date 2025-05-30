@@ -134,7 +134,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/launch-function.zip
-        S3ObjectVersion: "uAW6dXdZabqSfu8hzsEbGaCh3RC3SS5j"
+        S3ObjectVersion: "zu9ciBH_TvdFfW0PkTpQ6WsRlF8W6gTq"
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
@@ -157,6 +157,9 @@ Resources:
       EventPattern:
         source:
           - "custom.slackbot"
+        detail:
+          stack:
+            - !Sub "${AWS::StackName}"
       Targets:
         - Arn: !GetAtt SlackBotNotifyLambda.Arn
           Id: SlackNotify
