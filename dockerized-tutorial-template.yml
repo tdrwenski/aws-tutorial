@@ -11,6 +11,10 @@ Parameters:
   TutorialPort:
     Type: Number
     Description: Port to expose in docker
+  TutorialQueryString:
+    Type: String
+    Description: Query string to append to the container URL
+    Default: ""
 
 Resources:
   VPC:
@@ -272,6 +276,10 @@ Outputs:
   TutorialPort:
     Description: Port exposed by the container
     Value: !Ref TutorialPort
+
+  TutorialQueryString:
+    Description: Query string to append to the container URL
+    Value: !Ref TutorialQueryString
 
   RunTaskCommandTemplate:
     Description: Template for launching a tutorial task

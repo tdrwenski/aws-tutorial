@@ -66,6 +66,7 @@ def lambda_handler(event, context):
 
         task_arn = run_response["tasks"][0]["taskArn"]
         tutorial_port = get_cf_output(outputs, "TutorialPort")
+        tutorial_query_string = get_cf_output(outputs, "TutorialQueryString")
 
         # Emit event for async follow-up
         events.put_events(
@@ -77,7 +78,8 @@ def lambda_handler(event, context):
                     "cluster": cluster,
                     "response_url": response_url,
                     "user": user,
-                    "port": tutorial_port
+                    "port": tutorial_port,
+                    "query_string": tutorial_query_string
                 })
             }]
         )
