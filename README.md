@@ -39,12 +39,14 @@ aws cloudformation update-stack \
 
 ## Slackbot integration through lambda
 Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
-```
+``` bash
 ./submit-lambdas.sh
 ```
+If you update these lambdas be sure to update the `S3ObjectVersion` in cloud formation stack.
 
-Get URL needed in slackbot slash command
-```
+Get URL needed in slackbot slash command.
+Note that this URL remains the same even when the stack is updated, only need to redo this step if you delete and re-create the stack.
+``` bash
 aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
   --query "Stacks[0].Outputs[?OutputKey=='SlackCommandUrl'].OutputValue" \
