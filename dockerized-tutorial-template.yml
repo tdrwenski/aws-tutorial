@@ -88,8 +88,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub "${TutorialName}-task"
-      Cpu: '512'
-      Memory: '1024'
+      Cpu: '4096'
+      Memory: '8192'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
