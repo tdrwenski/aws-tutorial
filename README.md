@@ -22,27 +22,16 @@ TUTORIAL_NAME=nginx
 TUTORIAL_QUERY_STRING=""
 ```
 
-## create stack
+## deploy stack (create or update)
 ``` bash
-aws cloudformation create-stack \
+aws cloudformation deploy \
   --stack-name $TUTORIAL_STACK_NAME \
-  --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=$TUTORIAL_IMAGE \
-               ParameterKey=TutorialPort,ParameterValue=$TUTORIAL_PORT \
-               ParameterKey=TutorialName,ParameterValue=$TUTORIAL_NAME \
-               ParameterKey=TutorialQueryString,ParameterValue=$TUTORIAL_QUERY_STRING \
-  --capabilities CAPABILITY_NAMED_IAM
-```
-
-## update stack
-``` bash
-aws cloudformation update-stack \
-  --stack-name $TUTORIAL_STACK_NAME \
-  --template-body file://dockerized-tutorial-template.yml \
-  --parameters ParameterKey=TutorialImage,ParameterValue=$TUTORIAL_IMAGE \
-               ParameterKey=TutorialPort,ParameterValue=$TUTORIAL_PORT \
-               ParameterKey=TutorialName,ParameterValue=$TUTORIAL_NAME \
-               ParameterKey=TutorialQueryString,ParameterValue=$TUTORIAL_QUERY_STRING \
+  --template-file dockerized-tutorial-template.yml \
+  --parameter-overrides \
+    TutorialImage=$TUTORIAL_IMAGE \
+    TutorialPort=$TUTORIAL_PORT \
+    TutorialName=$TUTORIAL_NAME \
+    TutorialQueryString=$TUTORIAL_QUERY_STRING \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
