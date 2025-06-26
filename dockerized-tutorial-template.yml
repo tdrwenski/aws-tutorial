@@ -388,7 +388,7 @@ Outputs:
               --output text 2>/dev/null)
 
             if [ "$PUBLIC_IP" != "None" ] && [ -n "$PUBLIC_IP" ]; then
-              echo "$TASK_ID: https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
+              echo "$TASK_ID: http://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
               return 0
             fi
           fi
@@ -417,17 +417,25 @@ Outputs:
             --query 'tasks[0].taskArn' \
             --output text)
 
-          TASK_ARNS="$TASK_ARNS $TASK_ARN"
+          if [ -z "$TASK_ARNS" ]; then
+            TASK_ARNS="$TASK_ARN"
+          else
+            TASK_ARNS="$TASK_ARNS,$TASK_ARN"
+          fi
         done
 
         echo "Waiting for all task IPs..."
-        for TASK_ARN in $TASK_ARNS; do
-          TASK_ID=$(aws ecs list-tags-for-resource \
-            --resource-arn "$TASK_ARN" \
-            --query 'tags[?key==`task-id`].value' \
-            --output text)
 
-          wait_for_task_url "$TASK_ID" "$TASK_ARN"
+        # Process each comma-separated ARN
+        echo "$TASK_ARNS" | tr ',' '\n' | while read -r TASK_ARN; do
+          if [ -n "$TASK_ARN" ]; then
+            TASK_ID=$(aws ecs list-tags-for-resource \
+              --resource-arn "$TASK_ARN" \
+              --query 'tags[?key==`task-id`].value' \
+              --output text)
+
+            wait_for_task_url "$TASK_ID" "$TASK_ARN"
+          fi
         done
       }
 
@@ -460,7 +468,7 @@ Outputs:
           --query 'NetworkInterfaces[0].Association.PublicIp' \
           --output text)
 
-        echo "$TASK_ID,https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
+        echo "$TASK_ID,http://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
       done
 
   GetCliTaskUrlCommand:
@@ -497,7 +505,7 @@ Outputs:
             --query 'NetworkInterfaces[0].Association.PublicIp' \
             --output text)
 
-          echo "$TASK_ID,https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
+          echo "$TASK_ID,http://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
         fi
       done
 
