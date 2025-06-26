@@ -30,20 +30,15 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-## Slackbot integration through lambda
-Add lambda to S3 bucket (hpcic-tutorials in us-west-2).
+## Lambdas
+Add lambdas to S3 bucket (hpcic-tutorials in us-west-2).
 ``` bash
 ./submit-lambdas.sh
 ```
-If you update these lambdas be sure to update the `S3ObjectVersion` in cloud formation stack.
 
-Get URL needed in slackbot slash command.
-Note that this URL remains the same even when the stack is updated, only need to redo this step if you delete and re-create the stack.
-``` bash
-aws cloudformation describe-stacks \
-  --stack-name $TUTORIAL_STACK_NAME \
-  --query "Stacks[0].Outputs[?OutputKey=='SlackCommandUrl'].OutputValue" \
-  --output text
+If you update these lambdas be sure to update the `S3ObjectVersion` in cloud formation stack. You can retrieve this with e.g.:
+``` base
+aws s3api list-object-versions --bucket hpcic-tutorials --prefix slackbot/cleanup-tasks-function.zip --query 'Versions[0].VersionId' --output text
 ```
 
 ## start task (container)
@@ -93,6 +88,19 @@ eval "$(aws cloudformation describe-stacks \
 ``` bash
 aws cloudformation delete-stack --stack-name $TUTORIAL_STACK_NAME
 ```
+
+# Slackbot integration
+Go to the [Slack API](https://api.slack.com/). Choose "Your apps" and create or choose existing app, then go to slash commands. You just need to make a command name, description, and set the request URL to:
+
+``` bash
+aws cloudformation describe-stacks \
+  --stack-name $TUTORIAL_STACK_NAME \
+  --query "Stacks[0].Outputs[?OutputKey=='SlackCommandUrl'].OutputValue" \
+  --output text
+```
+
+Note that this URL remains the same even when the stack is updated, only need to redo this step if you delete and re-create the stack.
+
 
 # SOCI indexer for docker images
 SOCI (Seekable OCI) enables lazy loading of container images on AWS Fargate, allowing containers to start without waiting for the entire image to download. This can reduce startup times by 50-70% for large images.
