@@ -1,9 +1,14 @@
-# Notes
-- You must have your AWS credentials configured in ~/.aws/credentials
-- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`.
-- For large docker images, use ECR (also `us-west-2`).
-The SOCI indexer will automatically be used (you will see index next to image in ECR after a few minutes) and speed up pull time.
-See SOCI indexer info below.
+# AWS Tutorial Set up
+
+This CloudFormation stack deploys containerized tutorials on AWS Fargate.
+Tasks (docker containers) can be launched via CLI commands or Slack bot integration.
+Tasks are automatically stopped after the specified timeout.
+
+# Set up notes
+- You must have your AWS credentials configured in `~/.aws/credentials`
+- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`. You can se your region with `region = us-west-2` in `~/.aws/config`.
+- For large docker images, use the ECR (also in `us-west-2`).
+The SOCI indexer will automatically be used assuming the image matches the pattern in the `soci-index-builder` (see below). You will see index next to image in ECR after a few minutes and this will speed up pull time.
 
 # AWS CLI commands
 Set parameters for create and update commands, e.g. for Raja:
@@ -16,7 +21,8 @@ TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
 TASK_TIMEOUT_HOURS=6
 ```
 
-## deploy stack (create or update)
+## Deploy stack
+This creates or updates a cloudformation stack and waits until changes are complete:
 ``` bash
 aws cloudformation deploy \
   --stack-name $TUTORIAL_STACK_NAME \
@@ -41,7 +47,7 @@ If you update these lambdas be sure to update the `S3ObjectVersion` in cloud for
 aws s3api list-object-versions --bucket hpcic-tutorials --prefix slackbot/cleanup-tasks-function.zip --query 'Versions[0].VersionId' --output text
 ```
 
-## launch tasks
+## Launch tasks from CLI
 Launch tasks from CLI and wait for tutorial URLs to be returned:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
@@ -56,8 +62,8 @@ launch_tasks 1
 launch_tasks 3
 ```
 
-## get tutorial URLs
-All running tasks:
+## Get container URLs
+To get URLs for all running tasks:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
@@ -65,7 +71,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-CLI launched tasks only:
+To get URLs for CLI launched tasks only:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
@@ -73,7 +79,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-## delete all manually launched tasks
+## Delete all tasks
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
@@ -81,7 +87,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-## delete stack
+## Delete stack
 ``` bash
 aws cloudformation delete-stack --stack-name $TUTORIAL_STACK_NAME
 ```
@@ -103,7 +109,7 @@ Note that this URL remains the same even when the stack is updated, only need to
 SOCI (Seekable OCI) enables lazy loading of container images on AWS Fargate, allowing containers to start without waiting for the entire image to download. This can reduce startup times by 50-70% for large images.
 
 ## Deploy the SOCI Index Builder
-Deploy the official AWS SOCI Index Builder CloudFormation stack, which will automatically detect ECR pushes and create indices for matching images
+Deploy the official AWS SOCI Index Builder CloudFormation stack, which will automatically detect ECR pushes and create indices for matching images (currently only matching on raja image)
 ```
 aws cloudformation create-stack \
   --stack-name soci-index-builder \
