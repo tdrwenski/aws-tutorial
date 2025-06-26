@@ -94,8 +94,8 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub "${TutorialName}-task"
-      Cpu: '4096'
-      Memory: '8192'
+      Cpu: '2048'
+      Memory: '4096'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -113,7 +113,7 @@ Resources:
               awslogs-stream-prefix: ecs
           Environment:
             - Name: LAST_UPDATED
-              Value: "2025-06-26-v1"
+              Value: "2025-06-26-v2"
 
   LogGroup:
     Type: AWS::Logs::LogGroup
