@@ -15,3 +15,8 @@ cd ..
 aws s3 cp notify-function.zip s3://hpcic-tutorials/slackbot/notify-function.zip
 rm -rf notify-package
 rm notify-function.zip
+
+# cleanup function
+zip cleanup-tasks-function.zip cleanup-tasks-function.py
+aws s3 cp cleanup-tasks-function.zip s3://hpcic-tutorials/slackbot/cleanup-tasks-function.zip
+rm cleanup-tasks-function.zip
