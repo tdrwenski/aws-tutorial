@@ -382,10 +382,10 @@ Outputs:
         --launch-type FARGATE \
         --task-definition ${TaskDefinition} \
         --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
-        --tags key=task-id,value=$TASK_ID
+        --tags key=task-id,value=$TASK_ID key=launch-type,value=cli
 
   LaunchMultipleTasksCommand:
-    Description: Bash function to launch N tutorial tasks manually
+    Description: Bash function to launch N tutorial tasks through CLI
     Value: !Sub |
       launch_tasks() {
         local N=$1
@@ -403,7 +403,7 @@ Outputs:
             --launch-type FARGATE \
             --task-definition ${TaskDefinition} \
             --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
-            --tags key=task-id,value=$TASK_ID
+            --tags key=task-id,value=$TASK_ID key=launch-type,value=cli
         done
       }
 
@@ -439,8 +439,46 @@ Outputs:
         echo "$TASK_ID,$PUBLIC_IP"
       done
 
+  GetCLITaskIPCommand:
+    Description: Print task-id and public IP for tasks launched through CLI only
+    Value: !Sub |
+      echo "task-id,public-ip"
+
+      aws ecs list-tasks \
+        --cluster ${Cluster} \
+        --desired-status RUNNING \
+        --query 'taskArns[]' \
+        --output text | tr '\t' '\n' | while read TASK; do
+
+        # Check if task has cli launch tag
+        LAUNCH_TYPE=$(aws ecs list-tags-for-resource \
+          --resource-arn "$TASK" \
+          --query 'tags[?key==`launch-type`].value' \
+          --output text)
+
+        if [ "$LAUNCH_TYPE" = "cli" ]; then
+          TASK_ID=$(aws ecs list-tags-for-resource \
+            --resource-arn "$TASK" \
+            --query 'tags[?key==`task-id`].value' \
+            --output text)
+
+          ENI_ID=$(aws ecs describe-tasks \
+            --cluster ${Cluster} \
+            --tasks "$TASK" \
+            --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+            --output text)
+
+          PUBLIC_IP=$(aws ec2 describe-network-interfaces \
+            --network-interface-ids "$ENI_ID" \
+            --query 'NetworkInterfaces[0].Association.PublicIp' \
+            --output text)
+
+          echo "$TASK_ID,$PUBLIC_IP"
+        fi
+      done
+
   CleanupCommand:
-    Description: Stop all manually launched tutorial tasks
+    Description: Stop all tutorial tasks
     Value: !Sub |
 
       aws ecs list-tasks --cluster ${Cluster} --desired-status RUNNING --query 'taskArns[]' --output text | \
