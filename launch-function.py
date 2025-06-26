@@ -87,7 +87,7 @@ def lambda_handler(event, context):
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "response_type": "ephemeral",
-                "text": f"Task is launching for `{stack_name}`.\nYou’ll get a message in a few minutes when it’s ready."
+                "text": f"Task is launching for `{stack_name}`.\nYou’ll get a message when it’s ready."
             })
         }
 
