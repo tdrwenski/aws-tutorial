@@ -41,21 +41,18 @@ If you update these lambdas be sure to update the `S3ObjectVersion` in cloud for
 aws s3api list-object-versions --bucket hpcic-tutorials --prefix slackbot/cleanup-tasks-function.zip --query 'Versions[0].VersionId' --output text
 ```
 
-## start task (container)
+## launch tasks
+Launch tasks from CLI and wait for tutorial URLs to be returned:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
-  --query 'Stacks[0].Outputs[?OutputKey==`RunTaskCommandTemplate`].OutputValue' \
-  --output text)"
-```
-
-## start multiple tasks
-``` bash
-eval "$(aws cloudformation describe-stacks \
-  --stack-name $TUTORIAL_STACK_NAME \
-  --query "Stacks[0].Outputs[?OutputKey=='LaunchMultipleTasksCommand'].OutputValue" \
+  --query "Stacks[0].Outputs[?OutputKey=='LaunchTasksCommand'].OutputValue" \
   --output text)"
 
+# Launch a single task
+launch_tasks 1
+
+# Launch multiple tasks
 launch_tasks 3
 ```
 

@@ -366,27 +366,36 @@ Outputs:
     Description: Query string to append to the container URL
     Value: !Ref TutorialQueryString
 
-  RunTaskCommandTemplate:
-    Description: Template for launching a tutorial task
-    Value: !Sub |
-
-      COUNT=$(aws ecs list-tasks \
-        --cluster ${Cluster} \
-        --desired-status RUNNING \
-        --query 'taskArns' \
-        --output text | wc -w)
-      TASK_ID=$(printf "task-%03d" $((COUNT + 1)))
-
-      aws ecs run-task \
-        --cluster ${Cluster} \
-        --launch-type FARGATE \
-        --task-definition ${TaskDefinition} \
-        --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
-        --tags key=task-id,value=$TASK_ID key=launch-type,value=cli
-
-  LaunchMultipleTasksCommand:
+  LaunchTasksCommand:
     Description: Bash function to launch N tutorial tasks through CLI
     Value: !Sub |
+      # Function to wait for task IP and return URL
+      wait_for_task_url() {
+        local TASK_ID=$1
+        local TASK_ARN=$2
+
+        while true; do
+          ENI_ID=$(aws ecs describe-tasks \
+            --cluster ${Cluster} \
+            --tasks "$TASK_ARN" \
+            --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+            --output text 2>/dev/null)
+
+          if [ "$ENI_ID" != "None" ] && [ -n "$ENI_ID" ]; then
+            PUBLIC_IP=$(aws ec2 describe-network-interfaces \
+              --network-interface-ids "$ENI_ID" \
+              --query 'NetworkInterfaces[0].Association.PublicIp' \
+              --output text 2>/dev/null)
+
+            if [ "$PUBLIC_IP" != "None" ] && [ -n "$PUBLIC_IP" ]; then
+              echo "$TASK_ID: https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
+              return 0
+            fi
+          fi
+          sleep 2
+        done
+      }
+
       launch_tasks() {
         local N=$1
         if [ -z "$N" ]; then
@@ -394,17 +403,39 @@ Outputs:
           return 1
         fi
 
+        # Launch all tasks and store their info
         for ((i = 1; i <= N; i++)); do
           TASK_ID=$(printf "task-%03d" $i)
           echo "Launching $TASK_ID..."
 
-          aws ecs run-task \
+          TASK_ARN=$(aws ecs run-task \
             --cluster ${Cluster} \
             --launch-type FARGATE \
             --task-definition ${TaskDefinition} \
             --network-configuration "awsvpcConfiguration={subnets=[${PublicSubnet}],securityGroups=[${SecurityGroup}],assignPublicIp=ENABLED}" \
-            --tags key=task-id,value=$TASK_ID key=launch-type,value=cli
+            --tags key=task-id,value=$TASK_ID key=launch-type,value=cli \
+            --query 'tasks[0].taskArn' \
+            --output text)
+
+          echo "$TASK_ID,$TASK_ARN" >> /tmp/pending_tasks
         done
+
+        echo "Waiting for all tasks to get IPs..."
+
+        # Wait for all tasks to get IPs
+        while [ -s /tmp/pending_tasks ]; do
+          while IFS=',' read -r TASK_ID TASK_ARN; do
+            if wait_for_task_url "$TASK_ID" "$TASK_ARN" 2>/dev/null; then
+              grep -v "^$TASK_ID," /tmp/pending_tasks > /tmp/pending_tasks.tmp && mv /tmp/pending_tasks.tmp /tmp/pending_tasks
+            fi
+          done < /tmp/pending_tasks
+
+          if [ -s /tmp/pending_tasks ]; then
+            sleep 2
+          fi
+        done
+
+        rm -f /tmp/pending_tasks /tmp/pending_tasks.tmp
       }
 
       echo "Run 'launch_tasks N' to launch N tasks."
