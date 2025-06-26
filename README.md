@@ -6,7 +6,7 @@ Tasks are automatically stopped after the specified timeout.
 
 # Set up notes
 - You must have your AWS credentials configured in `~/.aws/credentials`
-- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`. You can se your region with `region = us-west-2` in `~/.aws/config`.
+- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`. You can set your region with `region = us-west-2` in `~/.aws/config`.
 - For large docker images, use the ECR (also in `us-west-2`).
 The SOCI indexer will automatically be used assuming the image matches the pattern in the `soci-index-builder` (see below). You will see index next to image in ECR after a few minutes and this will speed up pull time.
 
