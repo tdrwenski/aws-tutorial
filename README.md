@@ -11,15 +11,7 @@ TUTORIAL_IMAGE=169939313066.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:
 TUTORIAL_PORT=3000
 TUTORIAL_NAME=raja
 TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
-```
-
-Configure a second stack for test purposes with below cloud formation commands, for instance with:
-``` bash
-TUTORIAL_STACK_NAME=nginx-tutorial
-TUTORIAL_IMAGE=nginx:alpine
-TUTORIAL_PORT=80
-TUTORIAL_NAME=nginx
-TUTORIAL_QUERY_STRING=""
+TASK_TIMEOUT_HOURS=6
 ```
 
 ## deploy stack (create or update)
@@ -32,6 +24,7 @@ aws cloudformation deploy \
     TutorialPort=$TUTORIAL_PORT \
     TutorialName=$TUTORIAL_NAME \
     TutorialQueryString=$TUTORIAL_QUERY_STRING \
+    TaskTimeoutHours=$TASK_TIMEOUT_HOURS \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 

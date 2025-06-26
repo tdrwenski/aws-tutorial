@@ -15,6 +15,12 @@ Parameters:
     Type: String
     Description: Query string to append to the container URL
     Default: ""
+  TaskTimeoutHours:
+    Type: Number
+    Description: Maximum hours a task can run before being stopped
+    Default: 6
+    MinValue: 1
+    MaxValue: 72
 
 Resources:
   VPC:
@@ -262,6 +268,77 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${SlackBotLaunchLambda}"
+      RetentionInDays: 7
+
+  CleanupLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-TaskCleanup"
+      Handler: cleanup-tasks-function.lambda_handler
+      Runtime: python3.12
+      Role: !GetAtt CleanupLambdaRole.Arn
+      Timeout: 300
+      Code:
+        S3Bucket: hpcic-tutorials
+        S3Key: slackbot/cleanup-tasks-function.zip
+        S3ObjectVersion: "PLACEHOLDER"
+
+  CleanupLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-CleanupLambdaRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CleanupPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ecs:ListTasks
+                  - ecs:DescribeTasks
+                  - ecs:StopTask
+                Resource: "*"
+
+  CleanupScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${AWS::StackName}-TaskCleanupSchedule"
+      Description: "Triggers task cleanup every hour"
+      ScheduleExpression: "rate(1 hour)"
+      Targets:
+        - Arn: !GetAtt CleanupLambda.Arn
+          Id: CleanupTarget
+          Input: !Sub |
+            {
+              "cluster_name": "${Cluster}",
+              "timeout_hours": ${TaskTimeoutHours}
+            }
+
+  CleanupLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CleanupLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CleanupScheduleRule.Arn
+
+  CleanupLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${CleanupLambda}"
       RetentionInDays: 7
 
 Outputs:
