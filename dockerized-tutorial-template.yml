@@ -446,7 +446,7 @@ Outputs:
   GetContainerUrlCommand:
     Description: Print task-id and URL for all running tasks
     Value: !Sub |
-      echo "task-id,url"
+      echo "task-id,slack-user,launch-type,url"
 
       aws ecs list-tasks \
         --cluster ${Cluster} \
@@ -457,6 +457,16 @@ Outputs:
         TASK_ID=$(aws ecs list-tags-for-resource \
           --resource-arn "$TASK" \
           --query 'tags[?key==`task-id`].value' \
+          --output text)
+
+        SLACK_USER=$(aws ecs list-tags-for-resource \
+          --resource-arn "$TASK" \
+          --query 'tags[?key==`slack-user`].value' \
+          --output text)
+
+        LAUNCH_TYPE=$(aws ecs list-tags-for-resource \
+          --resource-arn "$TASK" \
+          --query 'tags[?key==`launch-type`].value' \
           --output text)
 
         ENI_ID=$(aws ecs describe-tasks \
@@ -470,7 +480,11 @@ Outputs:
           --query 'NetworkInterfaces[0].Association.PublicIp' \
           --output text)
 
-        echo "$TASK_ID,http://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
+        # Use dash for missing values
+        [ -z "$SLACK_USER" ] && SLACK_USER="-"
+        [ -z "$LAUNCH_TYPE" ] && LAUNCH_TYPE="-"
+
+        echo "$TASK_ID,$SLACK_USER,$LAUNCH_TYPE,http://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
       done
 
   GetCliTaskUrlCommand:
