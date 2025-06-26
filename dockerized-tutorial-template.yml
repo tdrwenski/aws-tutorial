@@ -406,7 +406,7 @@ Outputs:
         echo "Launching $N tasks..."
         TASK_ARNS=""
         for ((i = 1; i <= N; i++)); do
-          TASK_ID=$(printf "task-%03d" $i)
+          TASK_ID="task-$(date +%s)-$i"
 
           TASK_ARN=$(aws ecs run-task \
             --cluster ${Cluster} \
