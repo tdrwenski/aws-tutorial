@@ -409,10 +409,10 @@ Outputs:
 
       echo "Run 'launch_tasks N' to launch N tasks."
 
-  GetContainerIPCommand:
-    Description: Print task-id and public IP for all running tasks
+  GetContainerUrlCommand:
+    Description: Print task-id and URL for all running tasks
     Value: !Sub |
-      echo "task-id,public-ip"
+      echo "task-id,url"
 
       aws ecs list-tasks \
         --cluster ${Cluster} \
@@ -436,13 +436,13 @@ Outputs:
           --query 'NetworkInterfaces[0].Association.PublicIp' \
           --output text)
 
-        echo "$TASK_ID,$PUBLIC_IP"
+        echo "$TASK_ID,https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
       done
 
-  GetCLITaskIPCommand:
-    Description: Print task-id and public IP for tasks launched through CLI only
+  GetCliTaskUrlCommand:
+    Description: Print task-id and URL for tasks launched through CLI only
     Value: !Sub |
-      echo "task-id,public-ip"
+      echo "task-id,url"
 
       aws ecs list-tasks \
         --cluster ${Cluster} \
@@ -473,7 +473,7 @@ Outputs:
             --query 'NetworkInterfaces[0].Association.PublicIp' \
             --output text)
 
-          echo "$TASK_ID,$PUBLIC_IP"
+          echo "$TASK_ID,https://$PUBLIC_IP:${TutorialPort}${TutorialQueryString}"
         fi
       done
 

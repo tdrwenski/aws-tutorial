@@ -59,12 +59,12 @@ eval "$(aws cloudformation describe-stacks \
 launch_tasks 3
 ```
 
-## get tutorial IP addresses
+## get tutorial URLs
 All running tasks:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
-  --query "Stacks[0].Outputs[?OutputKey=='GetContainerIPCommand'].OutputValue" \
+  --query "Stacks[0].Outputs[?OutputKey=='GetContainerUrlCommand'].OutputValue" \
   --output text)"
 ```
 
@@ -72,7 +72,7 @@ CLI launched tasks only:
 ``` bash
 eval "$(aws cloudformation describe-stacks \
   --stack-name $TUTORIAL_STACK_NAME \
-  --query "Stacks[0].Outputs[?OutputKey=='GetCLITaskIPCommand'].OutputValue" \
+  --query "Stacks[0].Outputs[?OutputKey=='GetCliTaskUrlCommand'].OutputValue" \
   --output text)"
 ```
 
