@@ -1,7 +1,9 @@
 # Notes
 - You must have your AWS credentials configured in ~/.aws/credentials
-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in some regions. It works for me with `us-west-2`.
-- It is faster to pull a docker image from the ECR, especially for large images
+- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`.
+- For large docker images, use ECR (also `us-west-2`).
+The SOCI indexer will automatically be used (you will see index next to image in ECR after a few minutes) and speed up pull time.
+See SOCI indexer info below.
 
 # AWS CLI commands
 Set parameters for create and update commands, e.g. for Raja:
@@ -81,4 +83,18 @@ eval "$(aws cloudformation describe-stacks \
 ## delete stack
 ``` bash
 aws cloudformation delete-stack --stack-name $TUTORIAL_STACK_NAME
+```
+
+# SOCI indexer for docker images
+SOCI (Seekable OCI) enables lazy loading of container images on AWS Fargate, allowing containers to start without waiting for the entire image to download. This can reduce startup times by 50-70% for large images.
+
+## Deploy the SOCI Index Builder
+Deploy the official AWS SOCI Index Builder CloudFormation stack, which will automatically detect ECR pushes and create indices for matching images
+```
+aws cloudformation create-stack \
+  --stack-name soci-index-builder \
+  --template-url https://aws-quickstart.s3.us-east-1.amazonaws.com/cfn-ecr-aws-soci-index-builder/templates/SociIndexBuilder.yml \
+  --parameters ParameterKey=SociRepositoryImageTagFilters,ParameterValue="raja-suite-tutorial:*" \
+  --capabilities CAPABILITY_IAM \
+  --region us-west-2
 ```
