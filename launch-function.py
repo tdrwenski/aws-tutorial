@@ -43,6 +43,22 @@ def lambda_handler(event, context):
         subnet_id = get_cf_output(outputs, "PublicSubnetId")
         sg_id = get_cf_output(outputs, "SecurityGroupId")
 
+        # Check if user already has a running task
+        running_tasks = ecs.list_tasks(cluster=cluster, desiredStatus='RUNNING')
+
+        for task_arn in running_tasks['taskArns']:
+            tags = ecs.list_tags_for_resource(resourceArn=task_arn)
+            user_tags = [tag['value'] for tag in tags['tags'] if tag['key'] == 'slack-user']
+            if user in user_tags:
+                return {
+                    "statusCode": 200,
+                    "headers": {"Content-Type": "application/json"},
+                    "body": json.dumps({
+                        "response_type": "ephemeral",
+                        "text": f"You already have a running task for `{stack_name}`. Only one task per user is allowed."
+                    })
+                }
+
         # Launch ECS task
         run_response = ecs.run_task(
             cluster=cluster,
@@ -57,7 +73,9 @@ def lambda_handler(event, context):
                 }
             },
             tags=[
-                {"key": "task-id", "value": f"task-{int(time.time())}"}
+                {"key": "task-id", "value": f"task-{int(time.time())}"},
+                {"key": "slack-user", "value": user},
+                {"key": "launch-type", "value": "slack"}
             ]
         )
 
