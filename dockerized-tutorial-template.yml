@@ -143,7 +143,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/launch-function.zip
-        S3ObjectVersion: "zu9ciBH_TvdFfW0PkTpQ6WsRlF8W6gTq"
+        S3ObjectVersion: "q.e0oyb9ZPjyMnWE3MJpZIn7eC4Rq.Oc"
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
@@ -156,7 +156,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/notify-function.zip
-        S3ObjectVersion: "l2IecZmSLSJFRylbzMmDZTbgnOs4sLaC"
+        S3ObjectVersion: "_5BM4q2q9GzjoiV90lKxUsN8JEw_hlJo"
 
   SlackBotEventRule:
     Type: AWS::Events::Rule
@@ -281,7 +281,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/cleanup-tasks-function.zip
-        S3ObjectVersion: "xkQrTK.bDiAnxu2YoOOIQULeugunJmir"
+        S3ObjectVersion: "2ECUzY3Is8tyXH_Sjr49NlDwAavFTlu_"
 
   CleanupLambdaRole:
     Type: AWS::IAM::Role

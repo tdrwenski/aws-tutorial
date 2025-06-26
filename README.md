@@ -43,7 +43,7 @@ Add lambdas to S3 bucket (hpcic-tutorials in us-west-2).
 ```
 
 If you update these lambdas be sure to update the `S3ObjectVersion` in cloud formation stack. You can retrieve this with e.g.:
-``` base
+``` bash
 aws s3api list-object-versions --bucket hpcic-tutorials --prefix slackbot/cleanup-tasks-function.zip --query 'Versions[0].VersionId' --output text
 ```
 
