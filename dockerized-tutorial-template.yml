@@ -281,7 +281,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot/cleanup-tasks-function.zip
-        S3ObjectVersion: "PLACEHOLDER"
+        S3ObjectVersion: "xkQrTK.bDiAnxu2YoOOIQULeugunJmir"
 
   CleanupLambdaRole:
     Type: AWS::IAM::Role
