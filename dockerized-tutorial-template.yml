@@ -316,8 +316,8 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub "${AWS::StackName}-TaskCleanupSchedule"
-      Description: "Triggers task cleanup every hour"
-      ScheduleExpression: "rate(1 hour)"
+      Description: "Triggers task cleanup every 5 minutes"
+      ScheduleExpression: "rate(5 minutes)"
       Targets:
         - Arn: !GetAtt CleanupLambda.Arn
           Id: CleanupTarget
