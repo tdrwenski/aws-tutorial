@@ -214,6 +214,8 @@ Resources:
                 Action:
                   - ecs:RunTask
                   - ecs:DescribeTasks
+                  - ecs:ListTasks
+                  - ecs:ListTagsForResource
                   - ec2:DescribeNetworkInterfaces
                   - ecs:TagResource
                 Resource: "*"
