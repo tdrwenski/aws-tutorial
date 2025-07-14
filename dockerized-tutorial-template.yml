@@ -114,6 +114,14 @@ Resources:
           Environment:
             - Name: LAST_UPDATED
               Value: "2025-06-26-v3"
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - !Sub "curl -f http://localhost:${TutorialPort} || exit 1"
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 30
 
   LogGroup:
     Type: AWS::Logs::LogGroup
