@@ -106,7 +106,8 @@ Note that this URL remains the same even when the stack is updated, only need to
 
 
 # SOCI indexer for docker images
-SOCI (Seekable OCI) enables lazy loading of container images on AWS Fargate, allowing containers to start without waiting for the entire image to download. This can reduce startup times by 50-70% for large images.
+SOCI (Seekable OCI) enables lazy loading of container images on AWS Fargate, allowing containers to start without waiting for the entire image to download. This can reduce startup times by 50-70% for large images. This requires the image to be in the ECR.
+
 
 ## Deploy the SOCI Index Builder
 Deploy the official AWS SOCI Index Builder CloudFormation stack, which will automatically detect ECR pushes and create indices for matching images (currently only matching on raja image)
@@ -117,4 +118,29 @@ aws cloudformation create-stack \
   --parameters ParameterKey=SociRepositoryImageTagFilters,ParameterValue="raja-suite-tutorial:*" \
   --capabilities CAPABILITY_IAM \
   --region us-west-2
+```
+
+## Push image to ECR
+E.g. for raja image, we can make an ecr repo in our region:
+
+```
+aws ecr create-repository \
+  --repository-name raja-suite-tutorial \
+  --region us-west-2
+```
+
+Then we can update the image there:
+```
+# Get latest image from e.g. ghcr
+docker pull ghcr.io/llnl/raja-suite-tutorial/tutorial:latest
+
+# Get account ID
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+# Login to ECR
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com
+
+# Tag and push
+docker tag ghcr.io/llnl/raja-suite-tutorial/tutorial:latest $ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest
+docker push $ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/raja-suite-tutorial:latest
 ```
