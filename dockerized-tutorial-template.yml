@@ -368,6 +368,14 @@ Outputs:
     Description: Public Subnet ID
     Value: !Ref PublicSubnet
 
+  TutorialImage:
+    Description: Image used for the tutorial
+    Value: !Ref TutorialImage
+
+  TutorialName:
+    Description: Tutorial name
+    Value: !Ref TutorialName
+
   TutorialPort:
     Description: Port exposed by the container
     Value: !Ref TutorialPort
@@ -375,6 +383,10 @@ Outputs:
   TutorialQueryString:
     Description: Query string to append to the container URL
     Value: !Ref TutorialQueryString
+
+  TaskTimeoutHours:
+    Description: Timeout for tasks in hours
+    Value: !Ref TaskTimeoutHours
 
   LaunchTasksCommand:
     Description: Bash function to launch N tutorial tasks through CLI
