@@ -121,8 +121,6 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub "${TutorialName}-task"
-      Cpu: '1024'
-      Memory: '2048'
       NetworkMode: bridge
       RequiresCompatibilities:
         - EC2
@@ -130,6 +128,7 @@ Resources:
       ContainerDefinitions:
         - Name: !Sub "${TutorialName}-container"
           Image: !Ref TutorialImage
+          MemoryReservation: 4096
           ResourceRequirements:
             - Type: GPU
               Value: "1"
@@ -144,7 +143,7 @@ Resources:
               awslogs-stream-prefix: ecs
           Environment:
             - Name: LAST_UPDATED
-              Value: "2025-07-14-v1"
+              Value: "2025-07-16-v1"
           HealthCheck:
             Command:
               - CMD-SHELL
