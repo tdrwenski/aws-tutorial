@@ -18,7 +18,7 @@ TUTORIAL_IMAGE=raja-suite-tutorial:latest
 TUTORIAL_PORT=3000
 TUTORIAL_NAME=raja
 TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
-TASK_TIMEOUT_HOURS=6
+TASK_TIMEOUT_HOURS=1
 INSTANCE_TYPE=g4dn.xlarge
 KEY_PAIR_NAME="tutorial-key"  # Leave empty to disable SSH, or specify key pair name
 TUTORIAL_AMI=ami-0dacb0ed3ad1f62de

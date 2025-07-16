@@ -38,13 +38,13 @@ Parameters:
     Description: Minimum instances to keep running (0 = scale to zero, 1+ = pre-warmed)
     Default: 0
     MinValue: 0
-    MaxValue: 25
+    MaxValue: 250
   MaxInstances:
     Type: Number
     Description: Maximum instances to scale up to
     Default: 10
     MinValue: 1
-    MaxValue: 100
+    MaxValue: 250
 
 Conditions:
   HasKeyPair: !Not [!Equals [!Ref KeyPairName, ""]]
