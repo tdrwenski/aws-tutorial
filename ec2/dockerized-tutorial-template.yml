@@ -441,11 +441,11 @@ Resources:
                   - ecs:ListTasks
                   - ecs:DescribeTasks
                   - ecs:StopTask
+                  - ecs:DescribeContainerInstances
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - autoscaling:DescribeAutoScalingGroups
-                  - autoscaling:SetDesiredCapacity
+                  - ec2:TerminateInstances
                 Resource: "*"
 
   CleanupScheduleRule:
@@ -460,9 +460,7 @@ Resources:
           Input: !Sub |
             {
               "cluster_name": "${Cluster}",
-              "timeout_hours": ${TaskTimeoutHours},
-              "asg_name": "${AutoScalingGroup}",
-              "min_instances": ${MinInstances}
+              "timeout_hours": ${TaskTimeoutHours}
             }
 
   CleanupLambdaPermission:
