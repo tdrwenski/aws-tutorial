@@ -2,7 +2,12 @@
 
 This CloudFormation stack deploys containerized tutorials on AWS ECS with EC2 instances.
 Tasks (docker containers) can be launched via CLI commands or Slack bot integration.
-Tasks are automatically stopped after the specified timeout.
+
+**Scaling behavior:**
+- **Automatic scale UP**: Instances are launched automatically when tasks need them
+- **Manual pre-warming**: Use DesiredCapacity parameter to keep instances ready
+- **Automatic cleanup**: Tasks and their instances are terminated after timeout
+
 See below for setting up AMI.
 
 # Set up notes
@@ -18,12 +23,11 @@ TUTORIAL_IMAGE=raja-suite-tutorial:latest
 TUTORIAL_PORT=3000
 TUTORIAL_NAME=raja
 TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
-TASK_TIMEOUT_HOURS=1
+TASK_TIMEOUT_HOURS=1 # Low for testing
 INSTANCE_TYPE=g4dn.xlarge
 KEY_PAIR_NAME="tutorial-key"  # Leave empty to disable SSH, or specify key pair name
 TUTORIAL_AMI=ami-0dacb0ed3ad1f62de
-MIN_INSTANCES=0  # 0 = scale to zero, 1+ = pre-warmed instances
-MAX_INSTANCES=10  # Maximum instances to scale up to
+DESIRED_CAPACITY=0  # Number of instances to pre-warm (0 = no pre-warming, 10 = keep 10 ready)
 ```
 
 ## Deploy stack
@@ -41,8 +45,7 @@ aws cloudformation deploy \
     InstanceType=$INSTANCE_TYPE \
     KeyPairName=$KEY_PAIR_NAME \
     TutorialAMI=$TUTORIAL_AMI \
-    MinInstances=$MIN_INSTANCES \
-    MaxInstances=$MAX_INSTANCES \
+    DesiredCapacity=$DESIRED_CAPACITY \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
@@ -101,7 +104,7 @@ eval "$(aws cloudformation describe-stacks \
   --output text)"
 ```
 
-## Stop all instances manually
+## Scale instances manually
 ``` bash
 # Get Auto Scaling Group name
 ASG_NAME=$(aws cloudformation describe-stack-resources \
@@ -110,15 +113,20 @@ ASG_NAME=$(aws cloudformation describe-stack-resources \
   --query 'StackResources[0].PhysicalResourceId' \
   --output text)
 
-# Scale to zero instances
+# Scale to N instances (e.g. 0 to shut down, 100 to pre-warm)
 aws autoscaling set-desired-capacity \
   --auto-scaling-group-name $ASG_NAME \
   --desired-capacity 0
 
-# Or force terminate:
-aws ec2 describe-instances \
-  --query 'Reservations[*].Instances[?State.Name==`running`].InstanceId' \
-  --output text | xargs aws ec2 terminate-instances --instance-ids
+# Check current utilization
+CLUSTER_NAME=$(aws cloudformation describe-stack-resources \
+  --stack-name $TUTORIAL_STACK_NAME \
+  --logical-resource-id Cluster \
+  --query 'StackResources[0].PhysicalResourceId' \
+  --output text)
+RUNNING_TASKS=$(aws ecs list-tasks --cluster $CLUSTER_NAME --desired-status RUNNING --query 'length(taskArns[])')
+INSTANCES=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $ASG_NAME --query 'AutoScalingGroups[0].Instances[?LifecycleState==`InService`]' --output json | jq length)
+echo "Running tasks: $RUNNING_TASKS, Available instances: $INSTANCES"
 ```
 
 ## Delete stack

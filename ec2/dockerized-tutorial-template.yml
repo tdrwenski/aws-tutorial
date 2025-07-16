@@ -33,17 +33,11 @@ Parameters:
     Type: AWS::EC2::Image::Id
     Description: AMI ID for EC2 instances (region-specific)
     Default: ami-0e8da24acff610897
-  MinInstances:
+  DesiredCapacity:
     Type: Number
-    Description: Minimum instances to keep running (0 = scale to zero, 1+ = pre-warmed)
+    Description: Number of instances to keep running
     Default: 0
     MinValue: 0
-    MaxValue: 250
-  MaxInstances:
-    Type: Number
-    Description: Maximum instances to scale up to
-    Default: 10
-    MinValue: 1
     MaxValue: 250
 
 Conditions:
@@ -143,7 +137,7 @@ Resources:
               awslogs-stream-prefix: ecs
           Environment:
             - Name: LAST_UPDATED
-              Value: "2025-07-16-v1"
+              Value: "2025-07-16-v2"
           HealthCheck:
             Command:
               - CMD-SHELL
@@ -227,8 +221,9 @@ Resources:
         LaunchTemplateId: !Ref LaunchTemplate
         Version: !GetAtt LaunchTemplate.LatestVersionNumber
       MinSize: 0
-      MaxSize: !Ref MaxInstances
-      DesiredCapacity: !Ref MinInstances
+      MaxSize: 250
+      DesiredCapacity: !Ref DesiredCapacity
+      NewInstancesProtectedFromScaleIn: true
       VPCZoneIdentifier:
         - !Ref PublicSubnet
       Tags:
@@ -247,7 +242,7 @@ Resources:
           TargetCapacity: 90
           MinimumScalingStepSize: 1
           MaximumScalingStepSize: 1
-        ManagedTerminationProtection: DISABLED
+        ManagedTerminationProtection: ENABLED
 
   ClusterCapacityProviderAssociation:
     Type: AWS::ECS::ClusterCapacityProviderAssociations
@@ -270,7 +265,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot-ec2/launch-function.zip
-        S3ObjectVersion: "IJbcgOgmEbe3trtHThot3zOTwwa1ypkA"
+        S3ObjectVersion: "41iwCwd0VxO768fznKQplRXAgibEX4ka"
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
@@ -283,7 +278,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot-ec2/notify-function.zip
-        S3ObjectVersion: "GCzjbHJpn1GAJIkCr9r0Eg0XG.hpfyRM"
+        S3ObjectVersion: "j16ij2eBo7C5dpXXpVbRx64vACK3JGeq"
 
   SlackBotEventRule:
     Type: AWS::Events::Rule
@@ -412,7 +407,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials
         S3Key: slackbot-ec2/cleanup-tasks-function.zip
-        S3ObjectVersion: "eu8qnGZCEk4jQH1SL0gdS_PtcrTdh9F7"
+        S3ObjectVersion: "2hRnGV63Jy..82cnVlu0FtseKMYHVmk4"
 
   CleanupLambdaRole:
     Type: AWS::IAM::Role
