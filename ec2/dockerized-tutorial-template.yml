@@ -239,7 +239,7 @@ Resources:
         AutoScalingGroupArn: !Ref AutoScalingGroup
         ManagedScaling:
           Status: ENABLED
-          TargetCapacity: 90
+          TargetCapacity: 100
           MinimumScalingStepSize: 1
           MaximumScalingStepSize: 1
         ManagedTerminationProtection: ENABLED
