@@ -9,11 +9,9 @@ Tasks (docker containers) can be launched via CLI commands or Slack bot integrat
 - **Automatic cleanup**: Tasks and their instances are terminated after timeout
 
 See below for setting up AMI.
-
-# Set up notes
+Notes:
 - You must have your AWS credentials configured in `~/.aws/credentials`
-- Use region `us-west-2`-- This stack creates a VPC, and each region can only have 5 VPCs max so may fail in e.g. `us-east-1`. You can set your region with `region = us-west-2` in `~/.aws/config`.
-- For large docker images, use the ECR (also in `us-west-2`).
+- You can set your region with `region = us-east-1` in `~/.aws/config`.
 
 # AWS CLI commands
 Set parameters for create and update commands, e.g. for Raja:
@@ -50,7 +48,7 @@ aws cloudformation deploy \
 ```
 
 ## Lambdas
-Add lambdas to S3 bucket (hpcic-tutorials in us-west-2).
+Add lambdas to S3 bucket (hpcic-tutorials in us-east-1).
 ``` bash
 ./submit-lambdas.sh
 ```
@@ -151,7 +149,7 @@ To start from a GPU-optimized AMI with ECS and Docker installed:
 ```
 aws ssm get-parameters \
   --names /aws/service/ecs/optimized-ami/amazon-linux-2/gpu/recommended/image_id \
-  --region us-west-2 \
+  --region us-east-1 \
   --query "Parameters[0].Value" \
   --output text
 ```
