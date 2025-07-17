@@ -263,9 +263,9 @@ Resources:
       Role: !GetAtt SlackBotLambdaRole.Arn
       Timeout: 15
       Code:
-        S3Bucket: hpcic-tutorials
+        S3Bucket: hpcic-tutorials-lambdas
         S3Key: slackbot-ec2/launch-function.zip
-        S3ObjectVersion: "8CaVAMzzy_TJVw0J5LncdLZZl16Vgt7x"
+        S3ObjectVersion: "CWtTbxNkIwJMfHSEvAnZXHscK0DUUkpT"
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
@@ -276,9 +276,9 @@ Resources:
       Role: !GetAtt SlackBotLambdaRole.Arn
       Timeout: 500
       Code:
-        S3Bucket: hpcic-tutorials
+        S3Bucket: hpcic-tutorials-lambdas
         S3Key: slackbot-ec2/notify-function.zip
-        S3ObjectVersion: "j16ij2eBo7C5dpXXpVbRx64vACK3JGeq"
+        S3ObjectVersion: "EMqzGEyhFTO6HxAr_Bp7ToVxdPdXbxRD"
 
   SlackBotEventRule:
     Type: AWS::Events::Rule
@@ -405,9 +405,9 @@ Resources:
       Role: !GetAtt CleanupLambdaRole.Arn
       Timeout: 300
       Code:
-        S3Bucket: hpcic-tutorials
+        S3Bucket: hpcic-tutorials-lambdas
         S3Key: slackbot-ec2/cleanup-tasks-function.zip
-        S3ObjectVersion: "2hRnGV63Jy..82cnVlu0FtseKMYHVmk4"
+        S3ObjectVersion: "h0w34ixQvmGV8c1nK84rGd1I6D_iiDqo"
 
   CleanupLambdaRole:
     Type: AWS::IAM::Role

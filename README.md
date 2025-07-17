@@ -24,7 +24,7 @@ TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
 TASK_TIMEOUT_HOURS=1 # Low for testing
 INSTANCE_TYPE=g4dn.xlarge
 KEY_PAIR_NAME="tutorial-key"  # Leave empty to disable SSH, or specify key pair name
-TUTORIAL_AMI=ami-0dacb0ed3ad1f62de
+TUTORIAL_AMI=ami-0624ab231d57633dd
 DESIRED_CAPACITY=0  # Number of instances to pre-warm (0 = no pre-warming, 10 = keep 10 ready)
 ```
 
@@ -48,7 +48,7 @@ aws cloudformation deploy \
 ```
 
 ## Lambdas
-Add lambdas to S3 bucket (hpcic-tutorials in us-east-1).
+Add lambdas to S3 bucket (hpcic-tutorials-lambdas in us-east-1).
 ``` bash
 ./submit-lambdas.sh
 ```
@@ -56,7 +56,7 @@ Add lambdas to S3 bucket (hpcic-tutorials in us-east-1).
 If you update these lambdas be sure to update the `S3ObjectVersion` in cloud formation stack. You can retrieve this with e.g.:
 ``` bash
 aws s3api list-object-versions \
-    --bucket hpcic-tutorials \
+    --bucket hpcic-tutorials-lambdas \
     --prefix slackbot-ec2/ \
     --query 'Versions[?IsLatest==`true`].[Key,VersionId]' \
     --output table
