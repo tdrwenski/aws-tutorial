@@ -56,7 +56,7 @@ def lambda_handler(event, context):
 def send_response(url, message):
     try:
         response = requests.post(url, json={
-            "response_type": "in_channel",
+            "response_type": "ephemeral",
             "text": message
         })
         print(f"Slack response status: {response.status_code}")
