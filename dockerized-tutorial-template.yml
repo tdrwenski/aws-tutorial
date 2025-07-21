@@ -32,7 +32,6 @@ Parameters:
   TutorialAMI:
     Type: AWS::EC2::Image::Id
     Description: AMI ID for EC2 instances (region-specific)
-    Default: ami-0e8da24acff610897
   DesiredCapacity:
     Type: Number
     Description: Number of instances to keep running
