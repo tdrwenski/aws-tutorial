@@ -10,7 +10,11 @@ Parameters:
     Description: Name of the tutorial
   TutorialPort:
     Type: Number
-    Description: Port to expose in docker
+    Description: Main port to expose from container
+  AdditionalPorts:
+    Type: CommaDelimitedList
+    Description: Optional additional ports to expose (comma-separated, e.g. 8000,8080)
+    Default: ""
   TutorialQueryString:
     Type: String
     Description: Query string to append to the container URL
@@ -41,6 +45,9 @@ Parameters:
 
 Conditions:
   HasKeyPair: !Not [!Equals [!Ref KeyPairName, ""]]
+  HasAdditionalPorts: !Not [!Equals [!Join [",", !Ref AdditionalPorts], ""]]
+  HasSecondPort: !And [!Condition HasAdditionalPorts, !Not [!Equals [!Select [0, !Ref AdditionalPorts], ""]]]
+  HasThirdPort: !And [!Condition HasAdditionalPorts, !Not [!Equals [!Select [1, !Ref AdditionalPorts], ""]]]
 
 Resources:
   VPC:
@@ -127,7 +134,20 @@ Resources:
               Value: "1"
           PortMappings:
             - ContainerPort: !Ref TutorialPort
+              HostPort: !Ref TutorialPort
               Protocol: tcp
+            - !If
+              - HasSecondPort
+              - ContainerPort: !Select [0, !Ref AdditionalPorts]
+                HostPort: !Select [0, !Ref AdditionalPorts]
+                Protocol: tcp
+              - !Ref "AWS::NoValue"
+            - !If
+              - HasThirdPort
+              - ContainerPort: !Select [1, !Ref AdditionalPorts]
+                HostPort: !Select [1, !Ref AdditionalPorts]
+                Protocol: tcp
+              - !Ref "AWS::NoValue"
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -140,7 +160,9 @@ Resources:
           HealthCheck:
             Command:
               - CMD-SHELL
-              - !Sub "curl -f http://127.0.0.1:${TutorialPort} || exit 1"
+              - !Sub
+                - "curl -f http://127.0.0.1:${Port} || exit 1"
+                - Port: !Ref TutorialPort
             Interval: 30
             Timeout: 5
             Retries: 3
@@ -166,6 +188,35 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+
+  TutorialPortIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: !Ref TutorialPort
+      ToPort: !Ref TutorialPort
+      CidrIp: 0.0.0.0/0
+
+  AdditionalPort1IngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: HasSecondPort
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: !Select [0, !Ref AdditionalPorts]
+      ToPort: !Select [0, !Ref AdditionalPorts]
+      CidrIp: 0.0.0.0/0
+
+  AdditionalPort2IngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: HasThirdPort
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: !Select [1, !Ref AdditionalPorts]
+      ToPort: !Select [1, !Ref AdditionalPorts]
+      CidrIp: 0.0.0.0/0
 
   ECSInstanceRole:
     Type: AWS::IAM::Role
@@ -497,7 +548,7 @@ Outputs:
     Value: !Ref TutorialName
 
   TutorialPort:
-    Description: Port exposed by the container
+    Description: Main port exposed by the container
     Value: !Ref TutorialPort
 
   TutorialQueryString:

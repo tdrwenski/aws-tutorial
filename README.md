@@ -33,6 +33,7 @@ or for MFEM:
 TUTORIAL_STACK_NAME=mfem-tutorial
 TUTORIAL_IMAGE=ghcr.io/mfem/containers/developer-cpu:latest
 TUTORIAL_PORT=3000
+ADDITIONAL_PORTS="8000,8080"
 TUTORIAL_NAME=mfem
 TUTORIAL_QUERY_STRING="?folder=/home/euler/mfem"
 TASK_TIMEOUT_HOURS=1 # Low for testing
@@ -51,6 +52,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     TutorialImage=$TUTORIAL_IMAGE \
     TutorialPort=$TUTORIAL_PORT \
+    AdditionalPorts="$ADDITIONAL_PORTS" \
     TutorialName=$TUTORIAL_NAME \
     TutorialQueryString=$TUTORIAL_QUERY_STRING \
     TaskTimeoutHours=$TASK_TIMEOUT_HOURS \
