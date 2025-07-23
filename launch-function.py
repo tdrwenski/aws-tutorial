@@ -49,6 +49,7 @@ def lambda_handler(event, context):
             tags = ecs.list_tags_for_resource(resourceArn=task_arn)
             user_tags = [tag['value'] for tag in tags['tags'] if tag['key'] == 'slack-user']
             if user in user_tags:
+                print(f"user {user} already has task running with task_arn = {task_arn}")
                 return {
                     "statusCode": 200,
                     "headers": {"Content-Type": "application/json"},

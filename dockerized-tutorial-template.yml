@@ -315,7 +315,7 @@ Resources:
       Code:
         S3Bucket: hpcic-tutorials-lambdas
         S3Key: slackbot-ec2/launch-function.zip
-        S3ObjectVersion: "CWtTbxNkIwJMfHSEvAnZXHscK0DUUkpT"
+        S3ObjectVersion: "xgXb3wYKuno2jjqhr4jj.AHR5W5BGVE."
 
   SlackBotNotifyLambda:
     Type: AWS::Lambda::Function
