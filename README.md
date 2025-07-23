@@ -28,6 +28,20 @@ TUTORIAL_AMI=ami-0fd3583e062058212
 DESIRED_CAPACITY=0  # Number of instances to pre-warm (0 = no pre-warming, 10 = keep 10 ready)
 ```
 
+or for MFEM:
+``` bash
+TUTORIAL_STACK_NAME=mfem-tutorial
+TUTORIAL_IMAGE=ghcr.io/mfem/containers/developer-cpu:latest
+TUTORIAL_PORT=3000
+TUTORIAL_NAME=mfem
+TUTORIAL_QUERY_STRING="?folder=/home/euler/mfem"
+TASK_TIMEOUT_HOURS=1 # Low for testing
+INSTANCE_TYPE=g4dn.xlarge
+KEY_PAIR_NAME="tutorial-key-east"  # Leave empty to disable SSH, or specify key pair name
+TUTORIAL_AMI=ami-05e9292d97072fe11 # AWS ECS/GPU AMI
+DESIRED_CAPACITY=0  # Number of instances to pre-warm (0 = no pre-warming, 10 = keep 10 ready)
+```
+
 ## Deploy stack
 This creates or updates a cloudformation stack and waits until changes are complete:
 ``` bash
