@@ -39,7 +39,7 @@ def lambda_handler(event, context):
             containerInstances=[container_instance_arn]
         )
         instance_id = container_instances["containerInstances"][0]["ec2InstanceId"]
-        host_port = task["containers"][0]["networkBindings"][0]["hostPort"]
+        host_port = detail.get("port", "80")
         instance_desc = ec2.describe_instances(InstanceIds=[instance_id])
         public_ip = instance_desc["Reservations"][0]["Instances"][0]["PublicIpAddress"]
 
