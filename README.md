@@ -24,7 +24,7 @@ TUTORIAL_QUERY_STRING="?folder=/home/rajadev/tutorial"
 TASK_TIMEOUT_HOURS=1 # Low for testing
 INSTANCE_TYPE=g4dn.xlarge
 KEY_PAIR_NAME=""  # Leave empty to disable SSH, or specify key pair name
-TUTORIAL_AMI=ami-0fd3583e062058212
+TUTORIAL_AMI=ami-0ace94ec55fdbb964
 DESIRED_CAPACITY=0  # Number of instances to pre-warm (0 = no pre-warming, 10 = keep 10 ready)
 ```
 

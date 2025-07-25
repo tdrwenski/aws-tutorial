@@ -156,7 +156,7 @@ Resources:
               awslogs-stream-prefix: ecs
           Environment:
             - Name: LAST_UPDATED
-              Value: "2025-07-23-v1"
+              Value: "2025-07-25-v1"
           HealthCheck:
             Command:
               - CMD-SHELL
