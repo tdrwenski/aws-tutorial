@@ -52,7 +52,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     TutorialImage=$TUTORIAL_IMAGE \
     TutorialPort=$TUTORIAL_PORT \
-    AdditionalPorts="$ADDITIONAL_PORTS" \
+    AdditionalPorts="${ADDITIONAL_PORTS:-NONE}" \
     TutorialName=$TUTORIAL_NAME \
     TutorialQueryString=$TUTORIAL_QUERY_STRING \
     TaskTimeoutHours=$TASK_TIMEOUT_HOURS \
